@@ -153,7 +153,7 @@ def CAPE(z, p, t, q, parcel):
    if (len(z) != len(p) != len(t) != len(q)):
       raise Exception('Bounds of z, T, Td do not match')
 
-   ml_depth = .500  # for option of mixed layer parcel.
+   ml_depth = 500.  # for option of mixed layer parcel.
    pinc = 100. # Pa
 
    adiabat = 1

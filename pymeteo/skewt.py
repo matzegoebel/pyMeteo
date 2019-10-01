@@ -237,6 +237,11 @@ umax = 27.5
 vmin = -12.5
 vmax = 27.5
 
+barb_width = .5
+barb_zdiff = 200 # minimum  height difference between two wind barbs (m)
+
+circle_diff = 5 #difference between hodograph circles (m/s)
+barb_increments = {"half": 5, "full" : 10, "flag" : 50}
 ##################################################################################
 def plot_cm1h5(filename, xi, yi, output):
     """ Plots a skewt from an HDF5 file.
@@ -744,7 +749,7 @@ def plot_hodo_axes(axes):
 
   This will plot range arcs and labels for a hodograph plot
   """
-  bounds = [-25,25,-25,25]
+  bounds = [umin, umax, vmin, vmax]
   axes.axis('equal')
   draw_hodograph(axes, bounds)
   remove_tick_labels(axes)
@@ -784,7 +789,7 @@ def plot_legend(axes):
 def plot_wind(axes, z, p, u, v, x=0):  
   for i in np.arange(0,len(z),1):
     if (p[i] > pt_plot):
-      plt.barbs(x,p[i],u[i],v[i], length=5, linewidth=.5)
+      plt.barbs(x,p[i],u[i],v[i], length=5, linewidth=.5, barb_increments=barb_increments)
 
   
 def plot_sounding(axes, z, th, p, qv, u = None, v = None):
@@ -849,14 +854,18 @@ def plot_sounding(axes, z, th, p, qv, u = None, v = None):
   # plot wind barbs on left side of plot.  move this?  right side?
   if (u is not None and v is not None):
       #draw_wind_line(axes)
+      z_prev = z[0] - barb_zdiff
       for i in np.arange(0,len(z),2):
-          if (p[i] > pt_plot):
-              plt.barbs(Tmin+4,p[i],u[i],v[i], length=5, linewidth=.5)
+          if (p[i] > pt_plot) and (z[i] >= z_prev + barb_zdiff):
+              z_prev = z[i]
+              plt.barbs(Tmin+4,p[i],u[i],v[i], length=5, linewidth=barb_width, barb_increments=barb_increments)
 
 def plot_wind_barbs(axes, z, p, u, v):
+    z_prev = z[0] - barb_zdiff
     for i in np.arange(0,len(z)):
-        if (p[i] > pt_plot):
-            plt.barbs(0,p[i],u[i],v[i], length=5, linewidth=.5)
+        if (p[i] > pt_plot) and (z[i] >= z_prev + barb_zdiff):
+            z_prev = z[i]
+            plt.barbs(0,p[i],u[i],v[i], length=5, linewidth=barb_width, barb_increments=barb_increments)
 
               
 def plot_hodograph(axes, z, u, v):
@@ -1048,11 +1057,17 @@ def print_parcel_info(title, pcl, x, y):
   y -= 0.05
   print_3col(r'$\theta_e$', '{0:4.1f}'.format(float(pcl['theta_e'])), 'K', x, y)
   y -= 0.05
-  print_3col('LI$_{MAX}$', '{0:3.1f}'.format(float(pcl['max_li'])), 'C', x, y)
+#  print_3col('LI$_{MAX}$', '{0:3.1f}'.format(float(pcl['max_li'])), 'C', x, y)
+#  y -= 0.05
+#  print_3col('LI$_{500}$', '{0:3.1f}'.format(float(pcl['li500'])), 'C', x, y)
+#  y -= 0.05
+#  print_3col('LI$_{300}$', '{0:3.1f}'.format(float(pcl['li300'])), 'C', x, y)
+#  y -= 0.05
+  print_3col('LFC', '{0:3.0f}'.format(float(pcl['lfc'])), 'm', x, y)
   y -= 0.05
-  print_3col('LI$_{500}$', '{0:3.1f}'.format(float(pcl['li500'])), 'C', x, y)
+  print_3col('LCL', '{0:3.0f}'.format(float(pcl['lcl'])), 'm', x, y)
   y -= 0.05
-  print_3col('LI$_{300}$', '{0:3.1f}'.format(float(pcl['li300'])), 'C', x, y)
+  print_3col('EL', '{0:3.0f}'.format(float(pcl['el'])), 'm', x, y)
   y -= 0.05
   print_3col('Parcel', '{0}'.format(int(pcl['prs']/100.)), 'mb', x, y)
 
@@ -1091,13 +1106,13 @@ def draw_hodograph(axes, bounds):
   axes.plot([gmin,gmax],[0,0], color='black', linewidth=.5)
   axes.plot([0,0],[gmin,gmax], color='black', linewidth=.5)
   for u in np.arange(xmin+1,xmax):
-    if (u%5==0) and (u != 0):
+    if (u%circle_diff==0) and (u != 0):
       label_h(u,-1,str(u),'black',0,axes)
   for v in np.arange(ymin+1,ymax):
-    if (v%5==0) and (v != 0):
+    if (v%circle_diff==0) and (v != 0):
       label_h(-1,v,str(v),'black',0,axes)
 	# draw speed rings
-  for u in np.arange(5,math.sqrt(xmax**2+ymax**2)+1,5):
+  for u in np.arange(circle_diff,math.sqrt(xmax**2+ymax**2)+1,circle_diff):
     axes.plot( *hodograph_circle(u), color='grey', linewidth=.3)
 
 # helper function for circle points
