@@ -668,7 +668,7 @@ def plot_cm1(path, filename, xi, yi,output):
 def plot_old(x, y, z, time, th, p, qv, u, v, title, output):
   plot("{0} km, {1} km".format(x,y), z, th, p, qv, u, v, output, time, title)
 
-def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=True):
+def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=True, figsize=(8, 6.4)):
   """Plots Skew-T/Log-P diagrapms with hodograph
 
   The helper functions above facilitate loading data from
@@ -689,7 +689,7 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
   :parameter extended: extended plot with hodograph and sounding statistics
   """
   # if extended:
-  fig = plt.figure(1, figsize=(8, 6.4), dpi=300, edgecolor='k')
+  fig = plt.figure(1, figsize=figsize, dpi=300, edgecolor='k')
   ax1 = plt.subplot(121)
   # else:
   #     fig = plt.figure(1, figsize=(5, 8), dpi=300, edgecolor='k')
@@ -704,10 +704,11 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
       plot_hodo_axes(ax2)
       plot_hodograph(ax2, z, u, v)
   # datablock
+  parcels = None
   if extended:
       ax3 = fig.add_subplot(224)
       try:
-        plot_datablock(ax3, loc, z, time, th, p, qv, u, v, title)
+        parcels = plot_datablock(ax3, loc, z, time, th, p, qv, u, v, title)
       except:
           print("Error calcualting sounding stats, datablock omitted");
 
@@ -731,6 +732,7 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
 
   plt.savefig(output, dpi=300, bbox_inches=bbox_inches)
   plt.close()
+  return parcels
 
 def plot_sounding_axes(axes):
   """Plots Skew-T/Log-P axes
@@ -999,6 +1001,7 @@ def plot_datablock(ax4, _x,_z,_t,_th,_p,_qv,_u,_v, _title):
       line = 'Estimated storm motion (supercell right mover) -> {0:3.0f}$^\circ$ {1:3.1f} m/s'.format(cth,cr)
       plt.text(-1,.75, line, verticalalignment='center', horizontalalignment='left', fontsize=5)
 
+  parcels = {"surface": pcl, 'most unstable': mupcl, '500 m mixed layer': mlpcl}
   print_parcel_info('Surface Parcel', pcl, -1., .65)
   print_parcel_info('Most Unstable Parcel', mupcl, -0.3, .65)
   print_parcel_info('500 m Mixed Layer Parcel', mlpcl, 0.4, .65)
@@ -1053,6 +1056,8 @@ def plot_datablock(ax4, _x,_z,_t,_th,_p,_qv,_u,_v, _title):
       y -= 0.05
       line = '5-6 km shear {0:3.0f}$^\circ$ {1:3.1f} m/s'.format(shear['s56'][0],shear['s56'][1])
       plt.text(x,y, line, verticalalignment='center', horizontalalignment='left', fontsize=5)
+
+  return parcels
 
 def print_3col(name, value, unit, x, y):
    plt.text(x,y, name, verticalalignment='center', horizontalalignment='left', fontsize=5)
