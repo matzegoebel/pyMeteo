@@ -6,14 +6,14 @@
 
 .. moduleauthor:: Casey Webster <casey.webster@gmail.com>
 
-This module allows plotting Skew-T/Log-P diagrams 
-and hodographs from arrays of 
+This module allows plotting Skew-T/Log-P diagrams
+and hodographs from arrays of
 data with helper functions to plot directly from CM1 output files
 in either Grads or HDF5 format and also from sounding data text
 files in the format used for WRF and CM1 initialization.
 
 This module also has code to produce rudimentary analysis of
-the soundings data.  Currently this is limited to CAPE (surface 
+the soundings data.  Currently this is limited to CAPE (surface
 and most unstable), CIN, wind shear, storm relative helicity, lifted index
 and a rough estimate of storm motion based on the Bunkers (2000)
 method.
@@ -35,7 +35,7 @@ High level plotting functions
 * :py:func:`plot_sounding_data` -- plots skewt from CM1/WRF input sounding files
 * :py:func:`plot_sounding_data_uwyo` -- plots skewt from uwyo sounding data (file or online)
 
-These functions are called by command line scripts provided to make plotting from data files easy. 
+These functions are called by command line scripts provided to make plotting from data files easy.
 You can invoke these through command line scripts as:
 
 .. code-block:: bash
@@ -49,7 +49,7 @@ You can invoke these through command line scripts as:
    # From HDF5 CM1 output
    $ skewt cm1hdf -f model-data.h5 -x 0 -y 0 skewt.pdf
 
-   # From WRF output 
+   # From WRF output
    $ skewt wrf -f wrfout.nc --lat 30 --lon -80 -t 0 skewt.pdf
 
    # From University of Wyoming data file
@@ -65,7 +65,7 @@ You can invoke these through command line scripts as:
    import numpy as np
    import pymeteo.skewt as skewt
 
-   # prepare 1D arrays height (z), pressure (p), potential temperature (th), 
+   # prepare 1D arrays height (z), pressure (p), potential temperature (th),
    # water vapor mixing ratio (qv), winds (u and v) all of the same length.
 
    skewt.plot(None, z, th, p, qv, u, v, 'skewt.pdf')
@@ -136,7 +136,7 @@ import datetime
 import pymeteo.uwyo as uwyo
 
 # This defines the skew-angle of the T axis
-skew_angle = 37.5 
+skew_angle = 37.5
 """This defines the skewness of the T axis"""
 
 # These define the domain plotted.  T values are at @1000 mb (e.g. unskewed)
@@ -149,7 +149,7 @@ pbot = 105000.0
 ptop = 10000.0
 """Sets the top boundary of the plot. Pressure (Pa)"""
 
-## Values below used for plotting 
+## Values below used for plotting
 dp = 5000.0
 """The delta pressure used in calculating adiabats"""
 ptickbot = 100000.0
@@ -269,12 +269,12 @@ def plot_cm1h5(filename, xi, yi, output):
     - *v* -- v wind speed (m/s)
     - *qv* -- water vapor mixing ratio (kg/kg)
 
-    The names of these variables correspond to default naming by 
+    The names of these variables correspond to default naming by
     CM1 using HDF5 output.
 
     """
     f = h5py.File(filename, 'r')
-    z = f["/mesh/zh"][:]    # m 
+    z = f["/mesh/zh"][:]    # m
 
     x = f["/mesh/xh"][xi]   # m
     y = f["/mesh/yh"][yi]   # m
@@ -366,7 +366,7 @@ def plot_wrf(filename, lat, lon, time, output):
     if (lon < 0.):
         E = 'W'
     x = "{0} {1}, {2} {3}".format(abs(lat), N, abs(lon), E)
-    
+
     # pressure
     p_surface = f.variables['PSFC'][time,j,i]
     p = f.variables['P'][time,:,j,i] + f.variables['PB'][time,:,j,i]
@@ -408,20 +408,20 @@ def plot_wrf(filename, lat, lon, time, output):
     print(x, z[0],t,th[0],u[0],v[0],p[0],qv[0])
     plot(x, z, th, p, qv, u, v, output, t, title)
 
-    
+
 ##################################################################################
 #
 def plot_sounding_data(filename, output):
         """Plot SkewT from a WRF / CM1 compatible sounding data file
-    
+
         :param filename: The name of the file to open.
         :type filename: str
         :param output: The name of the file to output plot
         :type output: str
 
         The datafile is the same format as used in sounding initalization
-        files for WRF and CM1. 
-        
+        files for WRF and CM1.
+
         The format is:
         1 line header with surface pressure (mb), theta (K) and qv (g/kg)
         n number of lines with z (m), theta (K), qv (g/kg), u (m/s), v(m/s)
@@ -467,7 +467,7 @@ def plot_sounding_data(filename, output):
 
         #for k in np.arange(nk):
         #    print(z[k], p[k], th[k], qv[k], u[k], v[k])
-            
+
         plot(None, z, th, p, qv, u, v, output, title="input sounding")
 
 def plot_sounding_data_uwyo(filename, output, stationID=0, date=None):
@@ -484,9 +484,9 @@ def plot_sounding_data_uwyo(filename, output, stationID=0, date=None):
 
     If filename is not None then this function will plot data from that file.
     If filename is None and stationID is non-zero, then this will request a sounding
-    datafile from http://weather.uwyo.edu for the specified date.  If date is None 
+    datafile from http://weather.uwyo.edu for the specified date.  If date is None
     then the requested sounding will be the most recent sounding taken at either
-    12Z or 00Z. 
+    12Z or 00Z.
 
     """
 
@@ -498,21 +498,21 @@ def plot_sounding_data_uwyo(filename, output, stationID=0, date=None):
         title, p, z, qv, wind_dir, wind_speed, th = uwyo.fetch_from_web(date, stationID)
     else:
         print("Neither input file or station ID was provided.  No output.")
-        
-    p, z, qv, u, v, th = uwyo.transform_and_check_data(p, z, qv, wind_dir, wind_speed, th)    
+
+    p, z, qv, u, v, th = uwyo.transform_and_check_data(p, z, qv, wind_dir, wind_speed, th)
     plot(None, z, th, p, qv, u, v, output, title=title)
-    
-    
-        
+
+
+
 def plot_sounding_data_csv(filename, output):
         """Plot SkewT from a CSV sounding data file
-    
+
         :param filename: The name of the file to open.
         :type filename: str
         :param output: The name of the file to output plot
         :type output: str
 
-        The datafile format is CSV with the following columns: 
+        The datafile format is CSV with the following columns:
 
         - pressure (mb)
         - height (m)
@@ -520,7 +520,7 @@ def plot_sounding_data_csv(filename, output):
         - dew point (C)
         - wind direction (degrees)
         - wind speed (m/s)
-        
+
         Missing values should be filled with the value -9999.00
         """
         p,z,T,Td,wdir,wspd = np.loadtxt(filename, delimiter=',',  unpack=True)
@@ -529,7 +529,7 @@ def plot_sounding_data_csv(filename, output):
 
         # z to km
         #z = z / 1000.
-        
+
         # interpolate missing wind
 
         nk = len(z)
@@ -543,7 +543,7 @@ def plot_sounding_data_csv(filename, output):
               u[k], v[k] = dyn.wind_deg_to_uv(wdir[k], wspd[k])
 
            #print('{0:5.2f} {1:5.2f} = {2:5.2f} {3:5.2f}'.format(wdir[k], wspd[k], u[k], v[k]))
-           
+
         _z = np.empty(2,np.float32)
         _u = np.empty(2,np.float32)
         _v = np.empty(2,np.float32)
@@ -564,16 +564,16 @@ def plot_sounding_data_csv(filename, output):
                  _u[1] = u[ke]
                  _v[0] = v[kb]
                  _v[1] = v[ke]
-                 
+
                  u[k] = pymeteo.interp.linear(_z, _u, z[k])
                  v[k] = pymeteo.interp.linear(_z, _v, z[k])
 
               elif kb < 0:
                  u[k] = u[ke]
-                 v[k] = v[ke] 
+                 v[k] = v[ke]
               elif ke > nk-1:
                  u[k] = u[kb]
-                 v[k] = v[kb] 
+                 v[k] = v[kb]
 
         for k in range(nk):
            # kt to m/s
@@ -586,7 +586,7 @@ def plot_sounding_data_csv(filename, output):
         # calc qv
         qv = np.empty(nk, np.float32)
         for k in range(nk):
-           th[k] = met.theta(T[k]+met.T00, p[k]) 
+           th[k] = met.theta(T[k]+met.T00, p[k])
            w = met.es(Td[k]+met.T00) / met.es(T[k]+met.T00)
            pp = met.es(T[k]+met.T00) / p[k]
            qv[k] = 0.622 * pp * w
@@ -596,7 +596,7 @@ def plot_sounding_data_csv(filename, output):
 
         plot(None, z, th, p, qv, u, v, output, title='Sounding Data')
 
-        
+
 ##################################################################################
 # plot_cm1
 #
@@ -614,9 +614,9 @@ def plot_cm1(path, filename, xi, yi,output):
   :parameter y1: Y gridpoint to plot SkewT
   :parameter output: Filename to save skewt plot
 
-  This function plots a skewt from a CM1 output file.  
+  This function plots a skewt from a CM1 output file.
   This routine uses winds interpolated to the scalar
-  gridpoints.  
+  gridpoints.
   """
   f = cm1.CM1(path, filename)
   _z = f.dimZ[:] * 1000.   # km->m
@@ -624,7 +624,7 @@ def plot_cm1(path, filename, xi, yi,output):
   x = f.dimX[xi]
   y = f.dimY[yi]
   t = int(f.dimT[0])
-        
+
   f.read3dMultStart(t)
   _th = f.read3dMult('th')
   _p = f.read3dMult('prs')
@@ -666,9 +666,9 @@ def plot_cm1(path, filename, xi, yi,output):
 #TODO: put title at end default None.
 #TODO: pass both to plot_the_rest
 def plot_old(x, y, z, time, th, p, qv, u, v, title, output):
-  plot("{0} km, {1} km".format(x,y), z, th, p, qv, u, v, output, time, title) 
+  plot("{0} km, {1} km".format(x,y), z, th, p, qv, u, v, output, time, title)
 
-def plot(loc, z, th, p, qv, u, v, output, time = None, title = None):
+def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=True):
   """Plots Skew-T/Log-P diagrapms with hodograph
 
   The helper functions above facilitate loading data from
@@ -722,8 +722,8 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None):
 def plot_sounding_axes(axes):
   """Plots Skew-T/Log-P axes
 
-  This will plot isotherms, isobars, dry and moist adiabats, 
-  lines of constant water vapor mixing ratio, labels and 
+  This will plot isotherms, isobars, dry and moist adiabats,
+  lines of constant water vapor mixing ratio, labels and
   setup the y axes to be reversed.
 
   :paramter axes: The axes to draw on
@@ -784,14 +784,14 @@ def plot_legend(axes):
              loc=(0.125,0), fontsize=6, handlelength=10)
   # loc =, frameon=, fontsize=
   axes.set_axis_off()
-  
-  
-def plot_wind(axes, z, p, u, v, x=0):  
+
+
+def plot_wind(axes, z, p, u, v, x=0):
   for i in np.arange(0,len(z),1):
     if (p[i] > pt_plot):
       plt.barbs(x,p[i],u[i],v[i], length=5, linewidth=.5, barb_increments=barb_increments)
 
-  
+
 def plot_sounding(axes, z, th, p, qv, u = None, v = None):
   """Plot sounding data
 
@@ -867,7 +867,7 @@ def plot_wind_barbs(axes, z, p, u, v):
             z_prev = z[i]
             plt.barbs(0,p[i],u[i],v[i], length=5, linewidth=barb_width, barb_increments=barb_increments)
 
-              
+
 def plot_hodograph(axes, z, u, v):
   """Plot Hodograph data
 
@@ -878,7 +878,7 @@ def plot_hodograph(axes, z, u, v):
   :parameter v: V component of wind at z heights (1D array)
   :paramter axes: The axes instance to draw on
   """
-  
+
   # plot hodograph
   z6km = 0
   try:
@@ -902,7 +902,7 @@ def plot_hodograph(axes, z, u, v):
       axes.plot(ucb[2],ucb[3],markersize=4,color='black',marker='x')
     except:
         print("Error calculating sounding stats, storm motion marker not plotted");
-      
+
 def calc_sounding_stats(_z, _th, _p, _qv):
   T = met.T(_th,_p)                        # T (K)
   pcl = met.CAPE(_z, _p, T, _qv, 1)        # CAPE
@@ -925,17 +925,17 @@ def calc_hodograph_stats(_z, _u, _v):
       ucb = [0.,0.,0.,0.]
       srh01 = 0.
       srh03 = 0.
-      
+
   try:
     erh01 = dyn.srh(_u, _v, _z, 0., 1000., 0., 0.)
     erh03 = dyn.srh(_u, _v, _z, 0., 3000., 0., 0.)
-  
+
   except:
     print("Error calculating erh")
     erh01 = 0.
     erh03 = 0.
 
- 
+
   shear01 = dyn.uv_to_deg(*dyn.shear(_u, _v, _z, 0., 1000.))
   shear03 = dyn.uv_to_deg(*dyn.shear(_u, _v, _z, 0., 3000.))
   shear06 = dyn.uv_to_deg(*dyn.shear(_u, _v, _z, 0., 6000.))
@@ -1136,9 +1136,9 @@ def skew(p):
 
     :parameter p: pressure level of the point.
 
-    This calculates the skew of the T axis for a point to plot.  
+    This calculates the skew of the T axis for a point to plot.
     This assumes a logarithmic y axes and uses the variable
-    :py:data:skew_angle to determine the skew.  This is the 
+    :py:data:skew_angle to determine the skew.  This is the
     magic that turns a cartesian plot into a Skew-T/Log-p plot.
     """
     return skew_angle * np.log(met.p00/p)
@@ -1185,7 +1185,7 @@ def draw_dry_adiabat(axes):
     :type axes: :py:class:`matplotlib.axes`
 
     This function calculates dry adiabats
-    and plots these lines.  Adiabats are calculated 
+    and plots these lines.  Adiabats are calculated
     every 10 K
     """
     for T in dry_adiabats:
@@ -1194,7 +1194,7 @@ def draw_dry_adiabat(axes):
             axes.semilogy(dry_adiabat, plevs_plot, basey=math.e, color = lc_major, linewidth = lw_major)
         else:
             axes.semilogy(dry_adiabat, plevs_plot, basey=math.e, color = lc_minor, linewidth = lw_minor)
-            
+
     for T in np.arange(-20, 150, 10):
         p = (600. - 3.5*T)*100.
         x = met.T(T+met.T00,p) -met.T00 + skew(p)
@@ -1239,7 +1239,7 @@ def draw_moist_adiabat(axes):
             if (p == 22000):
                 if (T_1000 >= met.T00 and T_1000 <= 30+met.T00):
                     label(T-met.T00+skew(p),p/100,str(int(T_1000-met.T00)),'green', 0, axes)
-        if (int(T_1000 - met.T00) % 5 == 0):            
+        if (int(T_1000 - met.T00) % 5 == 0):
             axes.semilogy(moist_adiabat, plevs_plot2, basey=math.e, color = lc_major, linewidth = lw_major)
         else:
             axes.semilogy(moist_adiabat, plevs_plot2, basey=math.e, color = lc_minor, linewidth = lw_minor)
@@ -1260,7 +1260,7 @@ def draw_water_mix_ratio(axes):
     for W in mixing_ratios:
         water_mix = []
         for p in ps:
-            T = TMR(W,p/100.) 
+            T = TMR(W,p/100.)
             water_mix.append(T + skew(p))
         axes.semilogy(water_mix, ps, basey=math.e, color = 'grey', linestyle = '--', linewidth = .5)
 
@@ -1269,7 +1269,7 @@ def draw_water_mix_ratio(axes):
         label(T+skew(107500.), 1075, str(W), 'black', -15, axes)
 
 def label_std_heights(axes):
-   """Plot heights of standard pressure levels 
+   """Plot heights of standard pressure levels
 
    :paramter axes: The axes to draw on
    :type axes: :py:class:`matplotlib.axes`
