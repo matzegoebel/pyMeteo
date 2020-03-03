@@ -689,7 +689,7 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
   :parameter extended: extended plot with hodograph and sounding statistics
   """
   # if extended:
-  fig = plt.figure(1, figsize=(10, 8), dpi=300, edgecolor='k')
+  fig = plt.figure(1, figsize=(8, 6.4), dpi=300, edgecolor='k')
   ax1 = plt.subplot(121)
   # else:
   #     fig = plt.figure(1, figsize=(5, 8), dpi=300, edgecolor='k')
@@ -726,7 +726,7 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
       plt.subplots_adjust(left=0.03, bottom=0.03, right=0.97, top=0.97, wspace=0.12, hspace=0.12)
       bbox_inches = 0
   else:
-      plot_legend(ax1, loc=(0.125, -0.15))
+      plot_legend(ax1, loc=(0.05, -0.2))
       bbox_inches = "tight"
 
   plt.savefig(output, dpi=300, bbox_inches=bbox_inches)
