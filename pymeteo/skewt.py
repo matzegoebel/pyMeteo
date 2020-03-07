@@ -891,7 +891,7 @@ def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", 
   if (pcl['elprs'] > 0):
     label_m(Tmax-.5, pcl['elprs'], '--EL', axes)
   if (pcl['ptops'] > 0):
-    label_m(Tmax-.5, pcl['ptops'], '--TOPS', axes)
+    label_m(Tmax-.5, pcl['ptops'], '--$z_\mathrm{max}$', axes)
 
   # plot labels for std heights
   for plvl in plevs_std:
