@@ -668,7 +668,7 @@ def plot_cm1(path, filename, xi, yi,output):
 def plot_old(x, y, z, time, th, p, qv, u, v, title, output):
   plot("{0} km, {1} km".format(x,y), z, th, p, qv, u, v, output, time, title)
 
-def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=True, figsize=(8, 6.4)):
+def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=True, figsize=(8, 6.4), plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv")):
   """Plots Skew-T/Log-P diagrapms with hodograph
 
   The helper functions above facilitate loading data from
@@ -697,7 +697,7 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
 
   # sounding
   plot_sounding_axes(ax1)
-  plot_sounding(ax1, z, th, p, qv, None, None)
+  plot_sounding(ax1, z, th, p, qv, None, None, plot_vars=plot_vars)
   # hodograph
   if u is not None and extended:
       ax2 = plt.subplot(222)
@@ -722,12 +722,12 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
   # legend
   if extended:
       ax5 = fig.add_subplot(4,4,15)
-      plot_legend(ax5)
+      plot_legend(ax5, plot_vars=plot_vars)
       # Adjust plot margins.
       plt.subplots_adjust(left=0.03, bottom=0.03, right=0.97, top=0.97, wspace=0.12, hspace=0.12)
       bbox_inches = 0
   else:
-      plot_legend(ax1, loc=(0.05, -0.2))
+      plot_legend(ax1, loc=(0.05, -0.03), plot_vars=plot_vars)
       bbox_inches = "tight"
 
   plt.savefig(output, dpi=300, bbox_inches=bbox_inches)
@@ -771,32 +771,45 @@ def plot_hodo_axes(axes):
   axes.axis(bounds)
 
 
-def plot_legend(axes, loc=(0.125,0)):
+def plot_legend(axes, loc=(0.125,0.6), plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv")):
   """Plot skew-t legend"""
 
-  tT = r'Temperature'
-  lT = Line2D(range(10), range(10), linestyle='-', marker='', linewidth=linewidth_T, color=linecolor_T)
+  t = []
+  l = []
+  if "T" in plot_vars:
+    t.append( r'Temperature')
+    l.append(Line2D(range(10), range(10), linestyle='-', marker='', linewidth=linewidth_T, color=linecolor_T))
+    ls = linestyle_Tve
+    lw = linewidth_Tve
+  else:
+    ls = "-"
+    lw = linewidth_T
+  if "Tv" in plot_vars:
+    t.append( r'Virtual Temperature')
+    l.append(Line2D(range(10), range(10), linestyle=ls, marker='', linewidth=lw, color=linecolor_Tve))
+  if "Td" in plot_vars:
+     t.append( r'Dew-point Temperature')
+     l.append(Line2D(range(10), range(10), linestyle='-', marker='', linewidth=linewidth_Td, color=linecolor_Td))
 
-  tTd = r'Dew-point Temperature'
-  lTd = Line2D(range(10), range(10), linestyle='-', marker='', linewidth=linewidth_Td, color=linecolor_Td)
+  if "Twb" in plot_vars:
+    t.append( r'Wet-bulb Temperature')
+    l.append(Line2D(range(10), range(10), linestyle='-', marker='', linewidth=linewidth_Twb, color=linecolor_Twb))
 
-  tPT = r'Lifted Surface Parcel Temperature'
-  lPT = Line2D(range(10), range(10), linestyle='-', marker='', linewidth=linewidth_Parcel_T,
-               color=linecolor_Parcel_T)
+  # plot lifted parcel
+  if "Tp" in plot_vars:
+    t.append( r'Lifted Surface Parcel Temperature')
+    l.append(Line2D(range(10), range(10), linestyle='-', marker='', linewidth=linewidth_Parcel_T, color=linecolor_Parcel_T))
+    ls = linestyle_Tvp
+    lw = linewidth_Tvp
+  else:
+    ls = "-"
+    lw = linewidth_Parcel_T
 
-  tTwb = r'Wet-bulb Temperature'
-  lTwb = Line2D(range(10), range(10), linestyle='-', marker='', linewidth=linewidth_Twb, color=linecolor_Twb)
+  if "Tpv" in plot_vars:
+    t.append( r'Lifted Surface Parcel Virtual Temperature')
+    l.append(Line2D(range(10), range(10), linestyle=ls, marker='', linewidth=lw, color=linecolor_Tvp))
 
-  tTve = r'Virtual Temperature'
-  lTve = Line2D(range(10), range(10), linestyle=linestyle_Tve, marker='', linewidth=linewidth_Tve,
-                color=linecolor_Tve)
-
-  tTvp = r'Lifted Surface Parcel Virtual Temperature'
-  lTvp = Line2D(range(10), range(10), linestyle=linestyle_Tvp, marker='', linewidth=linewidth_Tvp,
-                color=linecolor_Tvp)
-
-  axes.legend((lT, lTve, lTd, lTwb, lPT, lTvp,),(tT, tTve, tTd, tTwb, tPT, tTvp,),
-             loc=loc, fontsize=6, handlelength=10)
+  axes.legend(l, t, loc=2, bbox_to_anchor=loc, fontsize=6, handlelength=10)
   # loc =, frameon=, fontsize=
   axes.set_axis_off()
 
@@ -807,7 +820,7 @@ def plot_wind(axes, z, p, u, v, x=0):
       plt.barbs(x,p[i],u[i],v[i], length=5, linewidth=.5, barb_increments=barb_increments)
 
 
-def plot_sounding(axes, z, th, p, qv, u = None, v = None):
+def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv")):
   """Plot sounding data
 
   This plots temperature, dewpoint and wind data on a Skew-T/Log-P plot.
@@ -820,7 +833,8 @@ def plot_sounding(axes, z, th, p, qv, u = None, v = None):
   :parameter qv: water vapor mixing ratio at z heights (1D array)
   :parameter u: U component of wind at z heights (1D array)
   :parameter v: V component of wind at z heights (1D array)
-  :paramter axes: The axes instance to draw on
+  :parameter plot_vars: variables to plot
+
   """
   # calculate Temperature and dewpoint
   T = met.T(th,p) - met.T00                          # T (C)
@@ -838,17 +852,35 @@ def plot_sounding(axes, z, th, p, qv, u = None, v = None):
   T_venv = met.T(pcl['thv_env'], pcl['pp']) - met.T00  # Env Tv (C)
 
   # plot Temperature, dewpoint, wetbulb and lifted surface parcel profiles on skew axes
-  axes.semilogy(T + skew(p), p, basey=math.e, color=linecolor_T , linewidth = linewidth_T)
-  axes.semilogy(Td + skew(p), p, basey=math.e, color=linecolor_Td, linewidth = linewidth_Td)
-  axes.semilogy(T_parcel + skew(pcl['pp']), pcl['pp'], basey=math.e,
-                color=linecolor_Parcel_T, linewidth=linewidth_Parcel_T)
-  axes.semilogy(Twb + skew(p), p, basey=math.e, color=linecolor_Twb, linewidth=linewidth_Twb)
+  if "T" in plot_vars:
+      axes.semilogy(T + skew(p), p, basey=math.e, color=linecolor_T , linewidth = linewidth_T)
+      ls = linestyle_Tve
+      lw = linewidth_Tve
+  else:
+      ls = "-"
+      lw = linewidth_T
+  if "Tv" in plot_vars:
+      axes.semilogy(T_venv + skew(pcl['pp']), pcl['pp'], basey=math.e, color=linecolor_Tve,
+                linewidth=lw, linestyle=ls)
+  if "Td" in plot_vars:
+      axes.semilogy(Td + skew(p), p, basey=math.e, color=linecolor_Td, linewidth = linewidth_Td)
 
-  # plot virtual temperature of environment and lifted parcel
-  axes.semilogy(T_venv + skew(pcl['pp']), pcl['pp'], basey=math.e, color=linecolor_Tve,
-                linewidth=linewidth_Tve, linestyle=linestyle_Tve)
-  axes.semilogy(T_vparcel + skew(pcl['pp']), pcl['pp'], basey=math.e, color=linecolor_Tvp,
-                linewidth=linewidth_Tvp, linestyle=linestyle_Tvp)
+  if "Twb" in plot_vars:
+      axes.semilogy(Twb + skew(p), p, basey=math.e, color=linecolor_Twb, linewidth=linewidth_Twb)
+
+  # plot lifted parcel
+  if "Tp" in plot_vars:
+      axes.semilogy(T_parcel + skew(pcl['pp']), pcl['pp'], basey=math.e,
+                    color=linecolor_Parcel_T, linewidth=linewidth_Parcel_T)
+      ls = linestyle_Tvp
+      lw = linewidth_Tvp
+  else:
+      ls = "-"
+      lw = linewidth_Parcel_T
+
+  if "Tpv" in plot_vars:
+      axes.semilogy(T_vparcel + skew(pcl['pp']), pcl['pp'], basey=math.e, color=linecolor_Tvp,
+                    linewidth=lw, linestyle=ls)
 
   # Add labels for levels based on surface parcel
   #debug print(pcl['lfcprs'], pcl['lclprs'], pcl['elprs'], pcl['ptops'])
