@@ -668,7 +668,8 @@ def plot_cm1(path, filename, xi, yi,output):
 def plot_old(x, y, z, time, th, p, qv, u, v, title, output):
   plot("{0} km, {1} km".format(x,y), z, th, p, qv, u, v, output, time, title)
 
-def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=True, figsize=(8, 6.4), plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv")):
+def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=True, figsize=(8, 6.4),
+         plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"), height_labels=True):
   """Plots Skew-T/Log-P diagrapms with hodograph
 
   The helper functions above facilitate loading data from
@@ -697,7 +698,7 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
 
   # sounding
   plot_sounding_axes(ax1)
-  plot_sounding(ax1, z, th, p, qv, None, None, plot_vars=plot_vars)
+  plot_sounding(ax1, z, th, p, qv, None, None, plot_vars=plot_vars, height_labels=height_labels)
   # hodograph
   if u is not None and extended:
       ax2 = plt.subplot(222)
@@ -730,6 +731,10 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
       plot_legend(ax1, loc=(0.05, -0.03), plot_vars=plot_vars)
       bbox_inches = "tight"
 
+  #ax1.set_axis_off()
+
+  ax1.set_xticks([])
+  ax1.set_yticks([])
   plt.savefig(output, dpi=300, bbox_inches=bbox_inches)
   plt.close()
   return parcels
@@ -811,7 +816,7 @@ def plot_legend(axes, loc=(0.125,0.6), plot_vars=("T", "Tv", "Twb", "Td", "Tp", 
 
   axes.legend(l, t, loc=2, bbox_to_anchor=loc, fontsize=6, handlelength=10)
   # loc =, frameon=, fontsize=
-  axes.set_axis_off()
+ # axes.set_axis_off()
 
 
 def plot_wind(axes, z, p, u, v, x=0):
@@ -820,7 +825,7 @@ def plot_wind(axes, z, p, u, v, x=0):
       plt.barbs(x,p[i],u[i],v[i], length=5, linewidth=.5, barb_increments=barb_increments)
 
 
-def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv")):
+def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"), height_labels=True):
   """Plot sounding data
 
   This plots temperature, dewpoint and wind data on a Skew-T/Log-P plot.
@@ -894,9 +899,10 @@ def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", 
     label_m(Tmax-.5, pcl['ptops'], '--$z_\mathrm{max}$', axes)
 
   # plot labels for std heights
-  for plvl in plevs_std:
-    zlvl = pymeteo.interp.interp_height(z,p,plvl)
-    label_m(Tmin-.5,plvl, str(int(zlvl)), axes)
+  if height_labels:
+      for plvl in plevs_std:
+        zlvl = pymeteo.interp.interp_height(z,p,plvl)
+        label_m(Tmin-.5,plvl, str(int(zlvl)), axes)
 
   # plot wind barbs on left side of plot.  move this?  right side?
   if (u is not None and v is not None):
@@ -1317,7 +1323,7 @@ def draw_water_mix_ratio(axes):
 
         # Label the isoline
         T = TMR(W,1075.)
-        label(T+skew(107500.), 1075, str(W), 'black', -15, axes)
+        label(T+skew(107500.), 1085, str(W), 'black', -15, axes)
 
 def label_std_heights(axes):
    """Plot heights of standard pressure levels
