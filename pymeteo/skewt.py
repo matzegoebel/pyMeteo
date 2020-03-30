@@ -669,7 +669,7 @@ def plot_old(x, y, z, time, th, p, qv, u, v, title, output):
   plot("{0} km, {1} km".format(x,y), z, th, p, qv, u, v, output, time, title)
 
 def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=True, figsize=(8, 6.4),
-         plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"), height_labels=True):
+         plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"), height_labels=True, extra_data=None):
   """Plots Skew-T/Log-P diagrapms with hodograph
 
   The helper functions above facilitate loading data from
@@ -699,6 +699,10 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
   # sounding
   plot_sounding_axes(ax1)
   plot_sounding(ax1, z, th, p, qv, None, None, plot_vars=plot_vars, height_labels=height_labels)
+  if extra_data is not None:
+      c = {"T":"gray", "Td" : "gray"}
+      plot_sounding(ax1, None, extra_data.th, extra_data.pressure, extra_data.qv, None, None, plot_vars=("T", "Td"), colors=c, height_labels=False)
+
   # hodograph
   if u is not None and extended:
       ax2 = plt.subplot(222)
@@ -825,7 +829,7 @@ def plot_wind(axes, z, p, u, v, x=0):
       plt.barbs(x,p[i],u[i],v[i], length=5, linewidth=.5, barb_increments=barb_increments)
 
 
-def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"), height_labels=True):
+def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"), colors=None, height_labels=True):
   """Plot sounding data
 
   This plots temperature, dewpoint and wind data on a Skew-T/Log-P plot.
@@ -845,32 +849,47 @@ def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", 
   T = met.T(th,p) - met.T00                          # T (C)
   Td = met.Td(p, qv) - met.T00                       # Td (C)
 
-  # calculate wetbulb temperature
-  Twb = np.empty(len(z), np.float32)                  # Twb (C)
-  for zlvl in range(len(z)):
-    Twb[zlvl] = met.Twb(z, p, th, qv, z[zlvl])
-
-  # Get surface parcel CAPE and temperature / height profiles
-  pcl = met.CAPE(z, p, T+met.T00, qv, 1)        # CAPE
-  T_parcel = pcl['t_p'] - met.T00                      # parcel T (C)
-  T_vparcel = pcl['tv_p'] - met.T00                     # parcel Tv (C)
-  T_venv = met.T(pcl['thv_env'], pcl['pp']) - met.T00  # Env Tv (C)
+  pcl = None
+  if ("Tpv" in plot_vars) or ("Tpv" in plot_vars) or ("Tv" in plot_vars):
+      # Get surface parcel CAPE and temperature / height profiles
+      pcl = met.CAPE(z, p, T+met.T00, qv, 1)        # CAPE
+      T_parcel = pcl['t_p'] - met.T00                      # parcel T (C)
+      T_vparcel = pcl['tv_p'] - met.T00                     # parcel Tv (C)
+      T_venv = met.T(pcl['thv_env'], pcl['pp']) - met.T00  # Env Tv (C)
 
   # plot Temperature, dewpoint, wetbulb and lifted surface parcel profiles on skew axes
   if "T" in plot_vars:
-      axes.semilogy(T + skew(p), p, basey=math.e, color=linecolor_T , linewidth = linewidth_T)
+      if (colors is not None) and ("T" in colors):
+          c = colors["T"]
+      else:
+          c = linecolor_T
+
+      axes.semilogy(T + skew(p), p, basey=math.e, color=c , linewidth = linewidth_T)
       ls = linestyle_Tve
       lw = linewidth_Tve
   else:
       ls = "-"
       lw = linewidth_T
   if "Tv" in plot_vars:
-      axes.semilogy(T_venv + skew(pcl['pp']), pcl['pp'], basey=math.e, color=linecolor_Tve,
+      if (colors is not None) and ("Tv" in colors):
+          c = colors["Tv"]
+      else:
+          c = linecolor_Tve
+      axes.semilogy(T_venv + skew(pcl['pp']), pcl['pp'], basey=math.e, color=c,
                 linewidth=lw, linestyle=ls)
   if "Td" in plot_vars:
-      axes.semilogy(Td + skew(p), p, basey=math.e, color=linecolor_Td, linewidth = linewidth_Td)
+      if (colors is not None) and ("Td" in colors):
+          c = colors["Td"]
+      else:
+          c = linecolor_Td
+      axes.semilogy(Td + skew(p), p, basey=math.e, color=c, linewidth = linewidth_Td)
 
-  if "Twb" in plot_vars:
+  if ("Twb" in plot_vars) and (z is not None):
+      # calculate wetbulb temperature
+      Twb = np.empty(len(z), np.float32)                  # Twb (C)
+      for zlvl in range(len(z)):
+        Twb[zlvl] = met.Twb(z, p, th, qv, z[zlvl])
+
       axes.semilogy(Twb + skew(p), p, basey=math.e, color=linecolor_Twb, linewidth=linewidth_Twb)
 
   # plot lifted parcel
@@ -889,14 +908,15 @@ def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", 
 
   # Add labels for levels based on surface parcel
   #debug print(pcl['lfcprs'], pcl['lclprs'], pcl['elprs'], pcl['ptops'])
-  if (pcl['lfcprs'] > 0):
-    label_m(Tmax-.5, pcl['lfcprs'], '--LFC', axes)
-  if (pcl['lclprs'] > 0):
-    label_m(Tmax-.5, pcl['lclprs'], '--LCL', axes)
-  if (pcl['elprs'] > 0):
-    label_m(Tmax-.5, pcl['elprs'], '--EL', axes)
-  if (pcl['ptops'] > 0):
-    label_m(Tmax-.5, pcl['ptops'], '--$z_\mathrm{max}$', axes)
+  if pcl is not None:
+    if (pcl['lfcprs'] > 0):
+      label_m(Tmax-.5, pcl['lfcprs'], '--LFC', axes)
+    if (pcl['lclprs'] > 0):
+      label_m(Tmax-.5, pcl['lclprs'], '--LCL', axes)
+    if (pcl['elprs'] > 0):
+      label_m(Tmax-.5, pcl['elprs'], '--EL', axes)
+    if (pcl['ptops'] > 0):
+      label_m(Tmax-.5, pcl['ptops'], '--$z_\mathrm{max}$', axes)
 
   # plot labels for std heights
   if height_labels:
