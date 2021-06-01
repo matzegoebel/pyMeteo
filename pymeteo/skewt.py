@@ -669,7 +669,7 @@ def plot_old(x, y, z, time, th, p, qv, u, v, title, output):
   plot("{0} km, {1} km".format(x,y), z, th, p, qv, u, v, output, time, title)
 
 def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=True, figsize=(8, 6.4),
-         plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"), height_labels=True, extra_data=None):
+         plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"), height_labels=True, extra_data=None, kstart=0):
   """Plots Skew-T/Log-P diagrapms with hodograph
 
   The helper functions above facilitate loading data from
@@ -688,6 +688,7 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
   :parameter title: Title for plot
   :parameter output: Filename to save plot to
   :parameter extended: extended plot with hodograph and sounding statistics
+  :parameter kstart: starting point of plotted parcel profile
   """
   # if extended:
   fig = plt.figure(1, figsize=figsize, dpi=300, edgecolor='k')
@@ -698,7 +699,7 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
 
   # sounding
   plot_sounding_axes(ax1)
-  plot_sounding(ax1, z, th, p, qv, None, None, plot_vars=plot_vars, height_labels=height_labels)
+  plot_sounding(ax1, z, th, p, qv, None, None, plot_vars=plot_vars, height_labels=height_labels, kstart=kstart)
   if extra_data is not None:
       c = {"T":"gray", "Td" : "gray"}
       plot_sounding(ax1, None, extra_data.th, extra_data.pressure, extra_data.qv, None, None, plot_vars=("T", "Td"), colors=c, height_labels=False)
@@ -713,7 +714,7 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
   if extended:
       ax3 = fig.add_subplot(224)
       try:
-        parcels = plot_datablock(ax3, loc, z, time, th, p, qv, u, v, title)
+        parcels = plot_datablock(ax3, loc, z, time, th, p, qv, u, v, title, kstart=kstart)
       except:
           print("Error calcualting sounding stats, datablock omitted");
 
@@ -829,7 +830,8 @@ def plot_wind(axes, z, p, u, v, x=0):
       plt.barbs(x,p[i],u[i],v[i], length=5, linewidth=.5, barb_increments=barb_increments)
 
 
-def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"), colors=None, height_labels=True):
+def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", "Twb", "Td", "Tp", "Tpv"),
+                  colors=None, height_labels=True, kstart=0):
   """Plot sounding data
 
   This plots temperature, dewpoint and wind data on a Skew-T/Log-P plot.
@@ -852,7 +854,7 @@ def plot_sounding(axes, z, th, p, qv, u = None, v = None, plot_vars=("T", "Tv", 
   pcl = None
   if ("Tpv" in plot_vars) or ("Tpv" in plot_vars) or ("Tv" in plot_vars):
       # Get surface parcel CAPE and temperature / height profiles
-      pcl = met.CAPE(z, p, T+met.T00, qv, 1)        # CAPE
+      pcl = met.CAPE(z, p, T+met.T00, qv, 1, kstart=kstart)        # CAPE
       T_parcel = pcl['t_p'] - met.T00                      # parcel T (C)
       T_vparcel = pcl['tv_p'] - met.T00                     # parcel Tv (C)
       T_venv = met.T(pcl['thv_env'], pcl['pp']) - met.T00  # Env Tv (C)
@@ -976,9 +978,9 @@ def plot_hodograph(axes, z, u, v):
     except:
         print("Error calculating sounding stats, storm motion marker not plotted");
 
-def calc_sounding_stats(_z, _th, _p, _qv):
+def calc_sounding_stats(_z, _th, _p, _qv, kstart=0):
   T = met.T(_th,_p)                        # T (K)
-  pcl = met.CAPE(_z, _p, T, _qv, 1)        # CAPE
+  pcl = met.CAPE(_z, _p, T, _qv, 1, kstart=kstart) # CAPE
   mupcl = met.CAPE(_z, _p, T, _qv, 2)      # MUCAPE
   mlpcl = met.CAPE(_z, _p, T, _qv, 3)      # MLCAPE
 
@@ -1036,8 +1038,8 @@ def calc_hodograph_stats(_z, _u, _v):
   return dict
 
 
-def plot_datablock(ax4, _x,_z,_t,_th,_p,_qv,_u,_v, _title):
-  pcl, mupcl, mlpcl = calc_sounding_stats(_z, _th, _p, _qv)
+def plot_datablock(ax4, _x,_z,_t,_th,_p,_qv,_u,_v, _title, kstart=0):
+  pcl, mupcl, mlpcl = calc_sounding_stats(_z, _th, _p, _qv, kstart=kstart)
   if _u is not None:
       shear = calc_hodograph_stats(_z, _u, _v)
       brn = dyn.brn(_u, _v, _z, pcl['cape'])

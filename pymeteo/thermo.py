@@ -142,7 +142,7 @@ def Twb(z,p,th,qv,z0):
 
    return Twb 
 
-def CAPE(z, p, t, q, parcel):
+def CAPE(z, p, t, q, parcel, kstart=0):
 
    #TODO: TOPS, LImax|500|300
 
@@ -179,7 +179,7 @@ def CAPE(z, p, t, q, parcel):
    # source parcel
 
    if (parcel == 1):
-      kmax = 0
+      kmax = kstart
 
    elif (parcel == 2):
       # use most unstable parcel 
