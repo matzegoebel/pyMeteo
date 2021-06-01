@@ -164,12 +164,12 @@ def CAPE(z, p, t, q, parcel, kstart=0):
 
    # goal: pi, td, th, thv
    # have: z, p, t, q
-   pi  = np.empty(nk, np.float32)
-   td  = np.empty(nk, np.float32)
-   th  = np.empty(nk, np.float32)
-   thv = np.empty(nk, np.float32)
-  
-   pi = (p*rp00)**rddcp 
+   pi  = np.empty(nk, np.float32)*np.nan
+   td  = np.empty(nk, np.float32)*np.nan
+   th  = np.empty(nk, np.float32)*np.nan
+   thv = np.empty(nk, np.float32)*np.nan
+
+   pi = (p*rp00)**rddcp
    td = Td(p,q)
    th = t/pi
    thv = th * (1. + reps * q)/(1. + q)
@@ -301,15 +301,15 @@ def CAPE(z, p, t, q, parcel, kstart=0):
    if (debuglevel >= 100):
       print('th_e = {0}'.format(the))
 
-   pt = np.empty(nk, np.float32)
-   pb = np.empty(nk, np.float32)
-   pc = np.empty(nk, np.float32)
-   pn = np.empty(nk, np.float32)
-   ptv = np.empty(nk, np.float32)
-   ptd = np.empty(nk, np.float32)
-   pqv = np.empty(nk, np.float32)
-   pql = np.empty(nk, np.float32)
-   
+   pt = np.empty(nk, np.float32)*np.nan
+   pb = np.empty(nk, np.float32)*np.nan
+   pc = np.empty(nk, np.float32)*np.nan
+   pn = np.empty(nk, np.float32)*np.nan
+   ptv = np.empty(nk, np.float32)*np.nan
+   ptd = np.empty(nk, np.float32)*np.nan
+   pqv = np.empty(nk, np.float32)*np.nan
+   pql = np.empty(nk, np.float32)*np.nan
+
    pt[k] = t2
    if cloud:
       ptd[k] = t2
