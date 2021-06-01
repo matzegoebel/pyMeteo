@@ -727,8 +727,9 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
 
   # legend
   if extended:
-      ax5 = fig.add_subplot(4,4,15)
+      ax5 = fig.add_subplot(3,4,11)
       plot_legend(ax5, plot_vars=plot_vars)
+      ax5.set_axis_off()
       # Adjust plot margins.
       plt.subplots_adjust(left=0.03, bottom=0.03, right=0.97, top=0.97, wspace=0.12, hspace=0.12)
       bbox_inches = 0
@@ -1126,16 +1127,17 @@ def print_3col(name, value, unit, x, y):
 
 def print_parcel_info(title, pcl, x, y):
   plt.text(x,y, title, verticalalignment='center', horizontalalignment='left', fontsize=5)
-  y -= 0.065
+  dy = 0.08
+  y -= dy
   x += 0.02
   print_3col('CAPE', '{0}'.format(int(pcl['cape'])), 'J kg$^{-1}$', x, y)
-  y -= 0.05
+  y -= dy
   print_3col('CIN', '{0}'.format(int(pcl['cin'])), 'J kg$^{-1}$', x, y)
-  y -= 0.05
+  y -= dy
   print_3col('TOPS', '{0:4.2f}'.format(float(pcl['ztops'])), 'km', x, y)
-  y -= 0.05
+  y -= dy
   print_3col(r'$\theta_e$', '{0:4.1f}'.format(float(pcl['theta_e'])), 'K', x, y)
-  y -= 0.05
+  y -= dy
 #  print_3col('LI$_{MAX}$', '{0:3.1f}'.format(float(pcl['max_li'])), 'C', x, y)
 #  y -= 0.05
 #  print_3col('LI$_{500}$', '{0:3.1f}'.format(float(pcl['li500'])), 'C', x, y)
@@ -1143,11 +1145,11 @@ def print_parcel_info(title, pcl, x, y):
 #  print_3col('LI$_{300}$', '{0:3.1f}'.format(float(pcl['li300'])), 'C', x, y)
 #  y -= 0.05
   print_3col('LFC', '{0:3.0f}'.format(float(pcl['lfc'])), 'm', x, y)
-  y -= 0.05
+  y -= dy
   print_3col('LCL', '{0:3.0f}'.format(float(pcl['lcl'])), 'm', x, y)
-  y -= 0.05
+  y -= dy
   print_3col('EL', '{0:3.0f}'.format(float(pcl['el'])), 'm', x, y)
-  y -= 0.05
+  y -= dy
   print_3col('Parcel', '{0}'.format(int(pcl['prs']/100.)), 'mb', x, y)
 
 
