@@ -1064,7 +1064,7 @@ def plot_datablock(ax4, _x,_z,_t,_th,_p,_qv,_u,_v, _title, kstart=0):
   if (_t != None):
     line += " Time = " + str(_t) + "."
   line += " " + str(len(_z)) + ' vertical levels'
-  plt.text(0,.85, line, verticalalignment='center', horizontalalignment='center', fontsize=5)
+  plt.text(0,.85, line, verticalalignment='center', horizontalalignment='center', fontsize=7, weight="bold")
 
   if _u is not None:
       cth,cr = dyn.uv_to_deg(shear['bunkers'][0],shear['bunkers'][1])
@@ -1145,7 +1145,7 @@ def print_parcel_info(title, pcl, x, y):
   y -= dy
   print_3col('CIN', '{0}'.format(int(pcl['cin'])), 'J kg$^{-1}$', x, y)
   y -= dy
-  print_3col('TOPS', '{0:4.2f}'.format(float(pcl['ztops'])), 'km', x, y)
+  print_3col('TOPS', '{0:4.2f}'.format(float(pcl['ztops'])), 'm', x, y)
   y -= dy
   print_3col(r'$\theta_e$', '{0:4.1f}'.format(float(pcl['theta_e'])), 'K', x, y)
   y -= dy
