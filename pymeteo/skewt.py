@@ -713,10 +713,10 @@ def plot(loc, z, th, p, qv, u, v, output, time = None, title = None, extended=Tr
   parcels = None
   if extended:
       ax3 = fig.add_subplot(224)
-      try:
-        parcels = plot_datablock(ax3, loc, z, time, th, p, qv, u, v, title, kstart=kstart)
-      except:
-          print("Error calcualting sounding stats, datablock omitted");
+      # try:
+      parcels = plot_datablock(ax3, loc, z, time, th, p, qv, u, v, title, kstart=kstart)
+      # except:
+      #     print("Error calcualting sounding stats, datablock omitted");
 
   if u is not None:
       # wind barbs
@@ -981,9 +981,18 @@ def plot_hodograph(axes, z, u, v):
 
 def calc_sounding_stats(_z, _th, _p, _qv, kstart=0):
   T = met.T(_th,_p)                        # T (K)
-  pcl = met.CAPE(_z, _p, T, _qv, 1, kstart=kstart) # CAPE
-  mupcl = met.CAPE(_z, _p, T, _qv, 2)      # MUCAPE
-  mlpcl = met.CAPE(_z, _p, T, _qv, 3)      # MLCAPE
+  try:
+      pcl = met.CAPE(_z, _p, T, _qv, 1, kstart=kstart) # CAPE
+  except:
+      pcl = None
+  try:
+      mupcl = met.CAPE(_z, _p, T, _qv, 2)      # MUCAPE
+  except:
+      mupcl = None
+  try:
+      mlpcl = met.CAPE(_z, _p, T, _qv, 3)      # MLCAPE
+  except:
+      mlpcl = None
 
   return (pcl,mupcl,mlpcl)
 
@@ -1126,6 +1135,8 @@ def print_3col(name, value, unit, x, y):
    plt.text(x+.4,y, unit, verticalalignment='center', horizontalalignment='left', fontsize=5)
 
 def print_parcel_info(title, pcl, x, y):
+  if pcl is None:
+      return
   plt.text(x,y, title, verticalalignment='center', horizontalalignment='left', fontsize=5)
   dy = 0.08
   y -= dy
