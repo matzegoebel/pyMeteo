@@ -154,6 +154,7 @@ def CAPE(z, p, t, q, parcel, kstart=0):
       raise Exception('Bounds of z, T, Td do not match')
 
    ml_depth = 500.  # for option of mixed layer parcel.
+   ml_height = z[0] + ml_depth
    pinc = 100. # Pa
 
    adiabat = 1
@@ -208,7 +209,7 @@ def CAPE(z, p, t, q, parcel, kstart=0):
          avgqv = q[0]
          kmax = 0
 
-      elif (z[nk-1] < ml_depth):
+      elif (z[nk-1] < ml_height):
          # all levels are in the mixed layer
          #print nk-1, z[nk-1], ml_depth
          avgth = th[nk-1]
@@ -225,7 +226,7 @@ def CAPE(z, p, t, q, parcel, kstart=0):
             print('  ml_depth = {0}'.format(ml_depth))
             print('  k,z,th,q = {0}, {1}, {2}, {3}'.format(0, z[0], th[0], q[0]))
 
-         while ((z[k] <= ml_depth) and (k < nk)):
+         while ((z[k] <= ml_height) and (k < nk)):
             if (debuglevel >= 100):
                print('  k,z,th,q = {0}, {1}, {2}, {3}'.format(k, z[k], th[k], q[k]))
 
@@ -234,14 +235,14 @@ def CAPE(z, p, t, q, parcel, kstart=0):
 
             k += 1
 
-         th2 = th[k-1]+(th[k]-th[k-1])*(ml_depth-z[k-1])/(z[k]-z[k-1])
-         qv2 = q[k-1]+(q[k]-q[k-1])*(ml_depth-z[k-1])/(z[k]-z[k-1])
+         th2 = th[k-1]+(th[k]-th[k-1])*(ml_height-z[k-1])/(z[k]-z[k-1])
+         qv2 = q[k-1]+(q[k]-q[k-1])*(ml_height-z[k-1])/(z[k]-z[k-1])
 
          if (debuglevel >= 100):
                print('  k,z,th,q = {0}, {1}, {2}, {3}'.format(999, ml_depth, th2, qv2))
 
-         avgth += 0.5*(ml_depth-z[k-1])*(th2+th[k-1])
-         avgqv += 0.5*(ml_depth-z[k-1])*(qv2+q[k-1])
+         avgth += 0.5*(ml_height-z[k-1])*(th2+th[k-1])
+         avgqv += 0.5*(ml_height-z[k-1])*(qv2+q[k-1])
 
 
          if (debuglevel >= 100):
